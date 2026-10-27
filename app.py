@@ -3,6 +3,9 @@ import requests
 
 app = Flask(__name__)
 
+# Emojis & Box characters escape avvakunda direct ga print avvataniki
+app.config['JSON_AS_ASCII'] = False
+
 # Base API URLs
 IFSC_API_BASE = "https://priyanshuexploits.vercel.app/api/ifsc/"
 AADHAAR_API_BASE = "https://aadhar-xi.vercel.app/api/lookup"
@@ -94,14 +97,13 @@ def lookup_all():
         except Exception as e:
             results['vehicle'] = f"Error: {str(e)}"
 
-    # Text format support for clean terminal report style matching your images & text cards
+    # Format=text isthe actual line breaks tho clean report vasthundi
     if out_format == 'text':
         formatted_text = "========================================\n"
         formatted_text += "          WOLF OSINT REPORT             \n"
         formatted_text += "========================================\n\n"
 
         if ifsc_code and 'ifsc' in results:
-            formatted_text += "--- 🏦 BANK & IFSC INTELLIGENCE CARD ---\n"
             formatted_text += str(results['ifsc']) + "\n\n"
 
         if vehicle_num and 'vehicle' in results:
