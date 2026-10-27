@@ -29,12 +29,12 @@ HTML_TEMPLATE = """
         .sidebar h2 { color: #58a6ff; font-size: 16px; padding: 0 20px; margin-bottom: 15px; }
         .sidebar .section { padding: 15px 20px; border-bottom: 1px solid #30363d; }
         .sidebar label { font-size: 12px; color: #8b949e; display: block; margin-bottom: 8px; font-weight: bold; }
-        .sidebar input[type="password"], .sidebar input[type="text"] { width: 100%; padding: 8px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 4px; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
+        .sidebar input[type="password"] { width: 100%; padding: 8px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 4px; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
         .sidebar button { background: #238636; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; font-family: monospace; }
         .sidebar button:hover { background: #2ea043; }
         
-        /* Locked Links Section (Hidden by default) */
-        .locked-section { display: none; background: #1a202c; border-left: 3px solid #f85149; }
+        /* Protected Links inside Password Option (Hidden by default) */
+        .protected-content { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #30363d; }
         
         .sidebar a { display: block; color: #58a6ff; text-decoration: none; font-size: 11px; margin: 8px 0; word-break: break-all; background: #21262d; padding: 6px; border-radius: 4px; border: 1px solid #30363d; }
         .sidebar a:hover { background: #30363d; text-decoration: underline; }
@@ -63,17 +63,17 @@ HTML_TEMPLATE = """
         <!-- Key's Password Option Section -->
         <div class="section">
             <label>🔑 Key's Password Option</label>
-            <input type="password" id="customKey" placeholder="Enter your own password">
+            <input type="password" id="customKey" placeholder="Enter your password">
             <button onclick="unlockLinks()">Save & Unlock</button>
-        </div>
 
-        <!-- Quick Lookup Links (Protected & Hidden until password entered) -->
-        <div id="lookupLinksSection" class="section locked-section">
-            <label>⚡ Quick Lookup Links (&format=text)</label>
-            <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123412341234&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup (IFSC + Aadhaar + Vehicle)</a>
-            <a href="/api/lookup?ifsc=SBIN0000794&format=text" target="_blank">🏦 IFSC: SBIN0000794</a>
-            <a href="/api/lookup?aadhaar=123412341234&format=text" target="_blank">🪪 Aadhaar Lookup</a>
-            <a href="/api/lookup?vehicle=HR55AL0051&format=text" target="_blank">🚗 Vehicle: HR55AL0051</a>
+            <!-- Quick Lookup Links option password section lopala matrame untundi -->
+            <div id="protectedLinks" class="protected-content">
+                <label style="color: #2ea043;">⚡ Quick Lookup Links (&format=text)</label>
+                <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123412341234&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup (IFSC + Aadhaar + Vehicle)</a>
+                <a href="/api/lookup?ifsc=SBIN0000794&format=text" target="_blank">🏦 IFSC: SBIN0000794</a>
+                <a href="/api/lookup?aadhaar=123412341234&format=text" target="_blank">🪪 Aadhaar Lookup</a>
+                <a href="/api/lookup?vehicle=HR55AL0051&format=text" target="_blank">🚗 Vehicle: HR55AL0051</a>
+            </div>
         </div>
     </div>
 
@@ -104,10 +104,10 @@ HTML_TEMPLATE = """
             const key = document.getElementById("customKey").value;
             if(key.trim() !== "") {
                 localStorage.setItem("wolf_osint_password", key);
-                document.getElementById("lookupLinksSection").style.display = "block";
-                alert("Password saved & Links unlocked successfully!");
+                document.getElementById("protectedLinks").style.display = "block";
+                alert("Password saved & Links unlocked!");
             } else {
-                alert("Please enter a valid password first.");
+                alert("Please enter a valid password.");
             }
         }
 
@@ -115,7 +115,7 @@ HTML_TEMPLATE = """
             const savedKey = localStorage.getItem("wolf_osint_password");
             if(savedKey) {
                 document.getElementById("customKey").value = savedKey;
-                document.getElementById("lookupLinksSection").style.display = "block";
+                document.getElementById("protectedLinks").style.display = "block";
             }
         }
     </script>
