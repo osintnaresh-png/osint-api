@@ -32,6 +32,10 @@ HTML_TEMPLATE = """
         .sidebar input[type="password"], .sidebar input[type="text"] { width: 100%; padding: 8px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 4px; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
         .sidebar button { background: #238636; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; font-family: monospace; }
         .sidebar button:hover { background: #2ea043; }
+        
+        /* Locked Links Section (Hidden by default) */
+        .locked-section { display: none; background: #1a202c; border-left: 3px solid #f85149; }
+        
         .sidebar a { display: block; color: #58a6ff; text-decoration: none; font-size: 11px; margin: 8px 0; word-break: break-all; background: #21262d; padding: 6px; border-radius: 4px; border: 1px solid #30363d; }
         .sidebar a:hover { background: #30363d; text-decoration: underline; }
 
@@ -59,16 +63,16 @@ HTML_TEMPLATE = """
         <!-- Key's Password Option Section -->
         <div class="section">
             <label>🔑 Key's Password Option</label>
-            <input type="password" id="customKey" placeholder="wolf630">
-            <button onclick="saveKey()">Save Password</button>
+            <input type="password" id="customKey" placeholder="Enter your own password">
+            <button onclick="unlockLinks()">Save & Unlock</button>
         </div>
 
-        <!-- Quick Lookup Links with Text Format -->
-        <div class="section">
+        <!-- Quick Lookup Links (Protected & Hidden until password entered) -->
+        <div id="lookupLinksSection" class="section locked-section">
             <label>⚡ Quick Lookup Links (&format=text)</label>
-            <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123456789012&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup (IFSC + Aadhaar + Vehicle)</a>
+            <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123412341234&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup (IFSC + Aadhaar + Vehicle)</a>
             <a href="/api/lookup?ifsc=SBIN0000794&format=text" target="_blank">🏦 IFSC: SBIN0000794</a>
-            <a href="/api/lookup?aadhaar=123456789012&format=text" target="_blank">🪪 Aadhaar Lookup</a>
+            <a href="/api/lookup?aadhaar=123412341234&format=text" target="_blank">🪪 Aadhaar Lookup</a>
             <a href="/api/lookup?vehicle=HR55AL0051&format=text" target="_blank">🚗 Vehicle: HR55AL0051</a>
         </div>
     </div>
@@ -96,13 +100,14 @@ HTML_TEMPLATE = """
             document.getElementById("sidebar").classList.toggle("active");
         }
 
-        function saveKey() {
+        function unlockLinks() {
             const key = document.getElementById("customKey").value;
-            if(key) {
+            if(key.trim() !== "") {
                 localStorage.setItem("wolf_osint_password", key);
-                alert("Key's password saved successfully!");
+                document.getElementById("lookupLinksSection").style.display = "block";
+                alert("Password saved & Links unlocked successfully!");
             } else {
-                alert("Please enter a valid password.");
+                alert("Please enter a valid password first.");
             }
         }
 
@@ -110,6 +115,7 @@ HTML_TEMPLATE = """
             const savedKey = localStorage.getItem("wolf_osint_password");
             if(savedKey) {
                 document.getElementById("customKey").value = savedKey;
+                document.getElementById("lookupLinksSection").style.display = "block";
             }
         }
     </script>
@@ -165,7 +171,7 @@ def lookup_all():
         except Exception as e:
             results['vehicle'] = f"Error: {str(e)}"
 
-    # Format=text support with clean terminal design
+    # Format=text support
     if out_format == 'text':
         formatted_text = "========================================\n"
         formatted_text += "          WOLF OSINT REPORT             \n"
