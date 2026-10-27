@@ -24,16 +24,16 @@ HTML_TEMPLATE = """
         .menu-btn:hover { background: #30363d; }
         
         /* Sidebar Drawer */
-        .sidebar { height: 100%; width: 300px; position: fixed; z-index: 1000; top: 0; left: -300px; background-color: #161b22; border-right: 1px solid #30363d; overflow-x: hidden; transition: 0.3s; padding-top: 70px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); text-align: left; }
+        .sidebar { height: 100%; width: 320px; position: fixed; z-index: 1000; top: 0; left: -320px; background-color: #161b22; border-right: 1px solid #30363d; overflow-x: hidden; transition: 0.3s; padding-top: 70px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); text-align: left; }
         .sidebar.active { left: 0; }
         .sidebar h2 { color: #58a6ff; font-size: 16px; padding: 0 20px; margin-bottom: 15px; }
         .sidebar .section { padding: 15px 20px; border-bottom: 1px solid #30363d; }
         .sidebar label { font-size: 12px; color: #8b949e; display: block; margin-bottom: 8px; font-weight: bold; }
-        .sidebar input[type="password"] { width: 100%; padding: 8px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 4px; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
+        .sidebar input[type="text"], .sidebar input[type="password"] { width: 100%; padding: 8px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 4px; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
         .sidebar button { background: #238636; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; font-family: monospace; }
         .sidebar button:hover { background: #2ea043; }
         
-        /* Protected Links inside Password Option (Hidden by default) */
+        /* Protected Links Section (Hidden by default) */
         .protected-content { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #30363d; }
         
         .sidebar a { display: block; color: #58a6ff; text-decoration: none; font-size: 11px; margin: 8px 0; word-break: break-all; background: #21262d; padding: 6px; border-radius: 4px; border: 1px solid #30363d; }
@@ -60,15 +60,16 @@ HTML_TEMPLATE = """
     <div id="sidebar" class="sidebar">
         <h2>🐺 Wolf OSINT Control</h2>
         
-        <!-- Key's Password Option Section -->
+        <!-- Login Option Section -->
         <div class="section">
-            <label>🔑 Key's Password Option</label>
-            <input type="password" id="customKey" placeholder="Enter your password">
-            <button onclick="unlockLinks()">Save & Unlock</button>
+            <label>🔐 Admin Login</label>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="handleLogin()">Login</button>
 
-            <!-- Quick Lookup Links option password section lopala matrame untundi -->
+            <!-- Protected Quick Lookup Links Section -->
             <div id="protectedLinks" class="protected-content">
-                <label style="color: #2ea043;">⚡ Quick Lookup Links (&format=text)</label>
+                <label style="color: #2ea043; margin-bottom: 10px;">⚡ Quick Lookup Links (&format=text)</label>
                 <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123412341234&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup (IFSC + Aadhaar + Vehicle)</a>
                 <a href="/api/lookup?ifsc=SBIN0000794&format=text" target="_blank">🏦 IFSC: SBIN0000794</a>
                 <a href="/api/lookup?aadhaar=123412341234&format=text" target="_blank">🪪 Aadhaar Lookup</a>
@@ -100,21 +101,24 @@ HTML_TEMPLATE = """
             document.getElementById("sidebar").classList.toggle("active");
         }
 
-        function unlockLinks() {
-            const key = document.getElementById("customKey").value;
-            if(key.trim() !== "") {
-                localStorage.setItem("wolf_osint_password", key);
+        function handleLogin() {
+            const user = document.getElementById("username").value;
+            const pass = document.getElementById("password").value;
+            
+            // Credentials: username -> admin, password -> wolf123 (Meeru ikkada koda change chesukovachu)
+            if(user === "admin" && pass === "wolf123") {
+                localStorage.setItem("wolf_logged_in", "true");
                 document.getElementById("protectedLinks").style.display = "block";
-                alert("Password saved & Links unlocked!");
+                alert("Login Successful! Links Unlocked.");
             } else {
-                alert("Please enter a valid password.");
+                alert("Invalid Username or Password!");
             }
         }
 
         window.onload = function() {
-            const savedKey = localStorage.getItem("wolf_osint_password");
-            if(savedKey) {
-                document.getElementById("customKey").value = savedKey;
+            if(localStorage.getItem("wolf_logged_in") === "true") {
+                document.getElementById("username").value = "admin";
+                document.getElementById("password").value = "wolf630";
                 document.getElementById("protectedLinks").style.display = "block";
             }
         }
