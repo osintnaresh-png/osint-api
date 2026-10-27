@@ -32,6 +32,8 @@ HTML_TEMPLATE = """
         .sidebar input[type="text"], .sidebar input[type="password"] { width: 100%; padding: 8px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 4px; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
         .sidebar button { background: #238636; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; font-family: monospace; }
         .sidebar button:hover { background: #2ea043; }
+        .logout-btn { background: #f85149 !important; }
+        .logout-btn:hover { background: #da3633 !important; }
         
         /* Protected Links Section (Hidden by default) */
         .protected-content { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #30363d; }
@@ -60,12 +62,22 @@ HTML_TEMPLATE = """
     <div id="sidebar" class="sidebar">
         <h2>🐺 Wolf OSINT Control</h2>
         
-        <!-- Login Option Section -->
+        <!-- Login / Logout Option Section -->
         <div class="section">
-            <label>🔐 Admin Login</label>
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="handleLogin()">Login</button>
+            <label>🔐 Admin Authentication</label>
+            
+            <!-- Login Form -->
+            <div id="loginForm">
+                <input type="text" id="username" placeholder="Username (admin)">
+                <input type="password" id="password" placeholder="Password (wolf1245)">
+                <button onclick="handleLogin()">Login</button>
+            </div>
+
+            <!-- Logout Form (Hidden initially) -->
+            <div id="logoutForm" style="display: none;">
+                <p style="color: #2ea043; font-size: 12px; margin-bottom: 10px; font-weight: bold;">🟢 Status: Logged In</p>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            </div>
 
             <!-- Protected Quick Lookup Links Section -->
             <div id="protectedLinks" class="protected-content">
@@ -105,21 +117,41 @@ HTML_TEMPLATE = """
             const user = document.getElementById("username").value;
             const pass = document.getElementById("password").value;
             
-            // Credentials: username -> admin, password -> wolf123 (Meeru ikkada koda change chesukovachu)
+            // Credentials: username -> admin, password -> wolf12345
             if(user === "admin" && pass === "wolf123") {
                 localStorage.setItem("wolf_logged_in", "true");
-                document.getElementById("protectedLinks").style.display = "block";
+                showLoggedInState();
                 alert("Login Successful! Links Unlocked.");
             } else {
                 alert("Invalid Username or Password!");
             }
         }
 
+        function handleLogout() {
+            localStorage.removeItem("wolf_logged_in");
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+            showLoggedOutState();
+            alert("Logged out successfully! Links Locked.");
+        }
+
+        function showLoggedInState() {
+            document.getElementById("loginForm").style.display = "none";
+            document.getElementById("logoutForm").style.display = "block";
+            document.getElementById("protectedLinks").style.display = "block";
+        }
+
+        function showLoggedOutState() {
+            document.getElementById("loginForm").style.display = "block";
+            document.getElementById("logoutForm").style.display = "none";
+            document.getElementById("protectedLinks").style.display = "none";
+        }
+
         window.onload = function() {
             if(localStorage.getItem("wolf_logged_in") === "true") {
-                document.getElementById("username").value = "admin";
-                document.getElementById("password").value = "wolf630";
-                document.getElementById("protectedLinks").style.display = "block";
+                showLoggedInState();
+            } else {
+                showLoggedOutState();
             }
         }
     </script>
