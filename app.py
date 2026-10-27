@@ -68,8 +68,8 @@ HTML_TEMPLATE = """
             
             <!-- Login Form -->
             <div id="loginForm">
-                <input type="text" id="username" placeholder="Username (admin)">
-                <input type="password" id="password" placeholder="Password (wolf1245)">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
                 <button onclick="handleLogin()">Login</button>
             </div>
 
@@ -117,8 +117,7 @@ HTML_TEMPLATE = """
             const user = document.getElementById("username").value;
             const pass = document.getElementById("password").value;
             
-            // Credentials: username -> admin, password -> wolf12345
-            if(user === "admin" && pass === "wolf123") {
+            if(user === "admin" && pass === "wolf1234") {
                 localStorage.setItem("wolf_logged_in", "true");
                 showLoggedInState();
                 alert("Login Successful! Links Unlocked.");
@@ -149,6 +148,8 @@ HTML_TEMPLATE = """
 
         window.onload = function() {
             if(localStorage.getItem("wolf_logged_in") === "true") {
+                document.getElementById("username").value = "admin";
+                document.getElementById("password").value = "wolf123";
                 showLoggedInState();
             } else {
                 showLoggedOutState();
