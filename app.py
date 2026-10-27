@@ -2,8 +2,6 @@ from flask import Flask, jsonify, request, render_template_string
 import requests
 
 app = Flask(__name__)
-
-# Emojis & Box characters escape avvakunda direct ga print avvataniki
 app.config['JSON_AS_ASCII'] = False
 
 # Base API URLs
@@ -19,32 +17,102 @@ HTML_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wolf OSINT</title>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: monospace; text-align: center; padding: 40px; }
-        .container { max-width: 600px; margin: auto; background: #161b22; padding: 30px; border-radius: 10px; border: 1px solid #30363d; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        img { width: 100px; height: 100px; border-radius: 50%; border: 2px solid #58a6ff; margin-bottom: 20px; object-fit: cover; }
-        h1 { color: #58a6ff; margin-bottom: 5px; }
-        .subtitle { color: #8b949e; margin-bottom: 20px; font-size: 14px; }
+        body { background-color: #0d1117; color: #c9d1d9; font-family: monospace; margin: 0; padding: 0; }
+        
+        /* Hamburger Three Lines Button */
+        .menu-btn { position: fixed; top: 20px; left: 20px; background: #21262d; border: 1px solid #30363d; color: #58a6ff; font-size: 24px; padding: 10px 15px; cursor: pointer; border-radius: 6px; z-index: 1001; transition: 0.2s; }
+        .menu-btn:hover { background: #30363d; }
+        
+        /* Sidebar Drawer */
+        .sidebar { height: 100%; width: 300px; position: fixed; z-index: 1000; top: 0; left: -300px; background-color: #161b22; border-right: 1px solid #30363d; overflow-x: hidden; transition: 0.3s; padding-top: 70px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); text-align: left; }
+        .sidebar.active { left: 0; }
+        .sidebar h2 { color: #58a6ff; font-size: 16px; padding: 0 20px; margin-bottom: 15px; }
+        .sidebar .section { padding: 15px 20px; border-bottom: 1px solid #30363d; }
+        .sidebar label { font-size: 12px; color: #8b949e; display: block; margin-bottom: 8px; font-weight: bold; }
+        .sidebar input[type="password"], .sidebar input[type="text"] { width: 100%; padding: 8px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 4px; box-sizing: border-box; margin-bottom: 8px; font-family: monospace; }
+        .sidebar button { background: #238636; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; font-family: monospace; }
+        .sidebar button:hover { background: #2ea043; }
+        .sidebar a { display: block; color: #58a6ff; text-decoration: none; font-size: 11px; margin: 8px 0; word-break: break-all; background: #21262d; padding: 6px; border-radius: 4px; border: 1px solid #30363d; }
+        .sidebar a:hover { background: #30363d; text-decoration: underline; }
+
+        /* Main Dashboard */
+        .main-content { display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; }
+        .container { max-width: 450px; background: #161b22; padding: 30px; border-radius: 10px; border: 1px solid #30363d; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        img { width: 90px; height: 90px; border-radius: 50%; border: 2px solid #58a6ff; margin-bottom: 20px; object-fit: cover; }
+        h1 { color: #58a6ff; margin-bottom: 5px; font-size: 22px; }
+        .subtitle { color: #8b949e; margin-bottom: 20px; font-size: 13px; }
         .status-box { margin: 20px 0; padding: 15px; background: #21262d; border-radius: 6px; text-align: left; border: 1px solid #30363d; }
-        .badge { display: inline-block; padding: 5px 10px; margin: 5px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .badge { display: inline-block; padding: 4px 8px; margin: 4px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .active { background: #238636; color: white; }
-        .footer { margin-top: 25px; font-size: 13px; color: #8b949e; border-top: 1px solid #30363d; padding-top: 15px; }
+        .footer { margin-top: 25px; font-size: 12px; color: #8b949e; border-top: 1px solid #30363d; padding-top: 15px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="https://img.magnific.com/premium-photo/cool-amazing-wolf-illustration-background-wallpaper-hd_862489-10415.jpg?semt=ais_hybrid&w=740&q=80=crop" alt="Wolf Logo">
-        <h1>Wolf OSINT</h1>
-        <div class="subtitle">System Online Running</div>
-        <div class="status-box">
-            <p><strong>Module Status:</strong></p>
-            <span class="badge active">IFSC Active</span>
-            <span class="badge active">Aadhaar Active</span>
-            <span class="badge active">Vehicle Active</span>
+
+    <!-- Three Lines Menu Button -->
+    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+
+    <!-- Sidebar Drawer Menu -->
+    <div id="sidebar" class="sidebar">
+        <h2>🐺 Wolf OSINT Control</h2>
+        
+        <!-- Key's Password Option Section -->
+        <div class="section">
+            <label>🔑 Key's Password Option</label>
+            <input type="password" id="customKey" placeholder="wolf630">
+            <button onclick="saveKey()">Save Password</button>
         </div>
-        <div class="footer">
-            <p>Developer: <strong>Wolf OSINT</strong></p>
+
+        <!-- Quick Lookup Links with Text Format -->
+        <div class="section">
+            <label>⚡ Quick Lookup Links (&format=text)</label>
+            <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123456789012&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup (IFSC + Aadhaar + Vehicle)</a>
+            <a href="/api/lookup?ifsc=SBIN0000794&format=text" target="_blank">🏦 IFSC: SBIN0000794</a>
+            <a href="/api/lookup?aadhaar=123456789012&format=text" target="_blank">🪪 Aadhaar Lookup</a>
+            <a href="/api/lookup?vehicle=HR55AL0051&format=text" target="_blank">🚗 Vehicle: HR55AL0051</a>
         </div>
     </div>
+
+    <!-- Main Dashboard UI -->
+    <div class="main-content">
+        <div class="container">
+            <img src="https://images.unsplash.com/photo-1561731216-c3a4d99437d5?w=200&h=200&fit=crop" alt="Wolf Logo">
+            <h1>Wolf OSINT</h1>
+            <div class="subtitle">System Online Running</div>
+            <div class="status-box">
+                <p style="margin: 0 0 10px 0; font-size: 12px; color: #8b949e;"><strong>MODULE STATUS:</strong></p>
+                <span class="badge active">IFSC Active</span>
+                <span class="badge active">Aadhaar Active</span>
+                <span class="badge active">Vehicle Active</span>
+            </div>
+            <div class="footer">
+                <p>Developer: <strong>Wolf OSINT</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("active");
+        }
+
+        function saveKey() {
+            const key = document.getElementById("customKey").value;
+            if(key) {
+                localStorage.setItem("wolf_osint_password", key);
+                alert("Key's password saved successfully!");
+            } else {
+                alert("Please enter a valid password.");
+            }
+        }
+
+        window.onload = function() {
+            const savedKey = localStorage.getItem("wolf_osint_password");
+            if(savedKey) {
+                document.getElementById("customKey").value = savedKey;
+            }
+        }
+    </script>
 </body>
 </html>
 """
@@ -97,7 +165,7 @@ def lookup_all():
         except Exception as e:
             results['vehicle'] = f"Error: {str(e)}"
 
-    # Format=text isthe actual line breaks tho clean report vasthundi
+    # Format=text support with clean terminal design
     if out_format == 'text':
         formatted_text = "========================================\n"
         formatted_text += "          WOLF OSINT REPORT             \n"
