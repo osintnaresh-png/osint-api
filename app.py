@@ -15,7 +15,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wolf OSINT</title>
+    <title>Info Dashboard</title>
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: monospace; margin: 0; padding: 0; }
         
@@ -60,11 +60,11 @@ HTML_TEMPLATE = """
 
     <!-- Sidebar Drawer Menu -->
     <div id="sidebar" class="sidebar">
-        <h2>🐺 Wolf OSINT Control</h2>
+        <h2>📊 Dashboard Control</h2>
         
         <!-- Login / Logout Option Section -->
         <div class="section">
-            <label>🔐 Admin Authentication</label>
+            <label>🔐 Authentication</label>
             
             <!-- Login Form -->
             <div id="loginForm">
@@ -81,10 +81,10 @@ HTML_TEMPLATE = """
 
             <!-- Protected Quick Lookup Links Section -->
             <div id="protectedLinks" class="protected-content">
-                <label style="color: #2ea043; margin-bottom: 10px;">⚡ Quick Lookup Links (&format=text)</label>
-                <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123412341234&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup (IFSC + Aadhaar + Vehicle)</a>
+                <label style="color: #2ea043; margin-bottom: 10px;">⚡ Quick Links (&format=text)</label>
+                <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123412341234&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup</a>
                 <a href="/api/lookup?ifsc=SBIN0000794&format=text" target="_blank">🏦 IFSC: SBIN0000794</a>
-                <a href="/api/lookup?aadhaar=123412341234&format=text" target="_blank">🪪 Aadhaar Lookup</a>
+                <a href="/api/lookup?aadhaar=123412341234&format=text" target="_blank">🪪 ID Lookup</a>
                 <a href="/api/lookup?vehicle=HR55AL0051&format=text" target="_blank">🚗 Vehicle: HR55AL0051</a>
             </div>
         </div>
@@ -93,17 +93,17 @@ HTML_TEMPLATE = """
     <!-- Main Dashboard UI -->
     <div class="main-content">
         <div class="container">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgpKLd4Ne_WrdjZHoK0GtqW08XxJobtbcVApZH7YjPnaLxexqjrAlyYE_S&s=10=crop" alt="Wolf Logo">
-            <h1>Wolf OSINT</h1>
+            <img src="https://t4.ftcdn.net/jpg/09/57/39/33/360_F_957393357_C2VcgHKUrwPjpdk0aMQY0DRsX434ySCZ.jpg" alt="Logo">
+            <h1>Info Portal</h1>
             <div class="subtitle">System Online Running</div>
             <div class="status-box">
                 <p style="margin: 0 0 10px 0; font-size: 12px; color: #8b949e;"><strong>MODULE STATUS:</strong></p>
                 <span class="badge active">IFSC Active</span>
-                <span class="badge active">Aadhaar Active</span>
+                <span class="badge active">ID Active</span>
                 <span class="badge active">Vehicle Active</span>
             </div>
             <div class="footer">
-                <p>Developer: <strong>Wolf OSINT</strong></p>
+                <p>Developer: <strong>Admin</strong></p>
             </div>
         </div>
     </div>
@@ -117,7 +117,7 @@ HTML_TEMPLATE = """
             const user = document.getElementById("username").value;
             const pass = document.getElementById("password").value;
             
-            if(user === "admin" && pass === "wolf1234") {
+            if(user === "admin" && pass === "nani586") {
                 localStorage.setItem("wolf_logged_in", "true");
                 showLoggedInState();
                 alert("Login Successful! Links Unlocked.");
@@ -149,7 +149,7 @@ HTML_TEMPLATE = """
         window.onload = function() {
             if(localStorage.getItem("wolf_logged_in") === "true") {
                 document.getElementById("username").value = "admin";
-                document.getElementById("password").value = "wolf123";
+                document.getElementById("password").value = "wolf1234";
                 showLoggedInState();
             } else {
                 showLoggedOutState();
@@ -211,7 +211,7 @@ def lookup_all():
     # Format=text support
     if out_format == 'text':
         formatted_text = "========================================\n"
-        formatted_text += "          WOLF OSINT REPORT             \n"
+        formatted_text += "          SYSTEM REPORT                 \n"
         formatted_text += "========================================\n\n"
 
         if ifsc_code and 'ifsc' in results:
@@ -228,7 +228,7 @@ def lookup_all():
             formatted_text += "\n"
 
         if aadhaar_num and 'aadhaar' in results:
-            formatted_text += "--- 🪪 AADHAAR INTELLIGENCE REPORT ---\n"
+            formatted_text += "--- 🪪 ID INTELLIGENCE REPORT ---\n"
             a_data = results['aadhaar']
             formatted_text += str(a_data) + "\n"
 
