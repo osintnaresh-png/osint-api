@@ -55,6 +55,7 @@ def lookup_all():
     ifsc_code = request.args.get('ifsc')
     aadhaar_num = request.args.get('aadhaar')
     vehicle_num = request.args.get('vehicle')
+    out_format = request.args.get('format', 'json')
 
     results = {}
 
@@ -63,54 +64,61 @@ def lookup_all():
         try:
             url = f"{IFSC_API_BASE}{ifsc_code}?format=text"
             res = requests.get(url, timeout=10)
-            data = res.text.replace('\n', ' ').strip() if res.status_code == 200 else res.text
-            results['ifsc'] = {
-                "status": "success" if res.status_code == 200 else "failed",
-                "data": data
-            }
+            results['ifsc'] = res.text if res.status_code == 200 else "Failed"
         except Exception as e:
-            results['ifsc'] = {"status": "error", "message": str(e)}
+            results['ifsc'] = f"Error: {str(e)}"
 
     # 2. Aadhaar API Call
     if aadhaar_num:
         try:
-            params = {
-                "id": aadhaar_num,
-                "format": "card"
-            }
+            params = {"id": aadhaar_num, "format": "card"}
             res = requests.get(AADHAAR_API_BASE, params=params, timeout=15)
             try:
                 data = res.json()
             except Exception:
-                data = res.text.replace('\n', ' ').strip()
-
-            results['aadhaar'] = {
-                "status": "success" if res.status_code == 200 else "failed",
-                "data": data,
-                "note": "[Aadhaar Redacted for privacy]"
-            }
+                data = res.text
+            results['aadhaar'] = data
         except Exception as e:
-            results['aadhaar'] = {"status": "error", "message": str(e)}
+            results['aadhaar'] = f"Error: {str(e)}"
 
     # 3. Vehicle API Call
     if vehicle_num:
         try:
-            params = {
-                "": "ultra_vehicle",
-                "key": "demo",
-                "xr": vehicle_num
-            }
+            params = {"": "ultra_vehicle", "key": "demo", "xr": vehicle_num}
             res = requests.get(VEHICLE_API_BASE, params=params, timeout=15)
             try:
                 data = res.json()
             except Exception:
-                data = res.text.replace('\n', ' ').strip()
-
-            results['vehicle'] = {
-                "status": "success" if res.status_code == 200 else "failed",
-                "data": data
-            }
+                data = res.text
+            results['vehicle'] = data
         except Exception as e:
-            results['vehicle'] = {"status": "error", "message": str(e)}
+            results['vehicle'] = f"Error: {str(e)}"
+
+    # Text format support for clean terminal report style matching your images & text cards
+    if out_format == 'text':
+        formatted_text = "========================================\n"
+        formatted_text += "          WOLF OSINT REPORT             \n"
+        formatted_text += "========================================\n\n"
+
+        if ifsc_code and 'ifsc' in results:
+            formatted_text += "--- 🏦 BANK & IFSC INTELLIGENCE CARD ---\n"
+            formatted_text += str(results['ifsc']) + "\n\n"
+
+        if vehicle_num and 'vehicle' in results:
+            formatted_text += "--- 🚗 VEHICLE RC INTELLIGENCE REPORT ---\n"
+            v_data = results['vehicle']
+            if isinstance(v_data, dict):
+                for k, v in v_data.items():
+                    formatted_text += f"{k} : {v}\n"
+            else:
+                formatted_text += str(v_data) + "\n"
+            formatted_text += "\n"
+
+        if aadhaar_num and 'aadhaar' in results:
+            formatted_text += "--- 🪪 AADHAAR INTELLIGENCE REPORT ---\n"
+            a_data = results['aadhaar']
+            formatted_text += str(a_data) + "\n"
+
+        return app.response_class(formatted_text, mimetype='text/plain')
 
     return jsonify(results)
