@@ -103,7 +103,7 @@ HTML_TEMPLATE = """
                 <span class="badge active">Vehicle Active</span>
             </div>
             <div class="footer">
-                <p>Developer: <strong>Admin</strong></p>
+                <p>Developer: <strong>nareshexploits</strong></p>
             </div>
         </div>
     </div>
