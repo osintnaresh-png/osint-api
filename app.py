@@ -32,7 +32,7 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <div class="container">
-        <img src="https://images.unsplash.com/photo-1561731216-c3a4d99437d5?w=200&h=200&fit=crop" alt="Wolf Logo">
+        <img src="https://img.magnific.com/premium-photo/cool-amazing-wolf-illustration-background-wallpaper-hd_862489-10415.jpg?semt=ais_hybrid&w=740&q=80=crop" alt="Wolf Logo">
         <h1>Wolf OSINT</h1>
         <div class="subtitle">System Online Running</div>
         <div class="status-box">
