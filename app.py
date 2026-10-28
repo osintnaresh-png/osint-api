@@ -117,7 +117,7 @@ HTML_TEMPLATE = """
             const user = document.getElementById("username").value;
             const pass = document.getElementById("password").value;
             
-            if(user === "admin" && pass === "wolf1234") {
+            if(user === "admin" && pass === "nani1234") {
                 localStorage.setItem("wolf_logged_in", "true");
                 showLoggedInState();
                 alert("Login Successful! Links Unlocked.");
