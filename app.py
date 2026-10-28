@@ -93,7 +93,7 @@ HTML_TEMPLATE = """
     <!-- Main Dashboard UI -->
     <div class="main-content">
         <div class="container">
-            <img src="https://t4.ftcdn.net/jpg/09/57/39/33/360_F_957393357_C2VcgHKUrwPjpdk0aMQY0DRsX434ySCZ.jpg=crop" alt="Wolf Logo">
+            <img src="https://www.tiktok.com/@soulscape.prints/photo/7617141774821215510=crop" alt="Wolf Logo">
             <h1>Wolf OSINT</h1>
             <div class="subtitle">System Online Running</div>
             <div class="status-box">
