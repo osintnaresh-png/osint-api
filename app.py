@@ -9,13 +9,21 @@ IFSC_API_BASE = "https://priyanshuexploits.vercel.app/api/ifsc/"
 AADHAAR_API_BASE = "https://api.naxupdate.workers.dev/api/aadhaar-info"
 VEHICLE_API_BASE = "https://api.sarkariallupdates.com/api"
 
+# Standard Browser Headers to bypass security / Cloudflare blocks
+COMMON_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://api.naxupdate.workers.dev/"
+}
+
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wolf OSINT</title>
+    <title>Info Dashboard</title>
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: monospace; margin: 0; padding: 0; }
         
@@ -60,11 +68,11 @@ HTML_TEMPLATE = """
 
     <!-- Sidebar Drawer Menu -->
     <div id="sidebar" class="sidebar">
-        <h2>🐺 Wolf OSINT Control</h2>
+        <h2>📊 Dashboard Control</h2>
         
         <!-- Login / Logout Option Section -->
         <div class="section">
-            <label>🔐 Admin Authentication</label>
+            <label>🔐 Authentication</label>
             
             <!-- Login Form -->
             <div id="loginForm">
@@ -81,10 +89,10 @@ HTML_TEMPLATE = """
 
             <!-- Protected Quick Lookup Links Section -->
             <div id="protectedLinks" class="protected-content">
-                <label style="color: #2ea043; margin-bottom: 10px;">⚡ Quick Lookup Links (&format=text)</label>
-                <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123412341234&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup (IFSC + Aadhaar + Vehicle)</a>
+                <label style="color: #2ea043; margin-bottom: 10px;">⚡ Quick Links (&format=text)</label>
+                <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123412341234&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup</a>
                 <a href="/api/lookup?ifsc=SBIN0000794&format=text" target="_blank">🏦 IFSC: SBIN0000794</a>
-                <a href="/api/lookup?aadhaar=123412341234&format=text" target="_blank">🪪 Aadhaar Lookup</a>
+                <a href="/api/lookup?aadhaar=123412341234&format=text" target="_blank">🪪 ID Lookup</a>
                 <a href="/api/lookup?vehicle=HR55AL0051&format=text" target="_blank">🚗 Vehicle: HR55AL0051</a>
             </div>
         </div>
@@ -93,17 +101,17 @@ HTML_TEMPLATE = """
     <!-- Main Dashboard UI -->
     <div class="main-content">
         <div class="container">
-            <img src="https://i.ibb.co/PZ6TQw9Z/6273772816943486571.jpg=crop" alt="Wolf Logo">
-            <h1>Wolf OSINT</h1>
+            <img src="https://t4.ftcdn.net/jpg/09/57/39/33/360_F_957393357_C2VcgHKUrwPjpdk0aMQY0DRsX434ySCZ.jpg" alt="Logo">
+            <h1>Info Portal</h1>
             <div class="subtitle">System Online Running</div>
             <div class="status-box">
                 <p style="margin: 0 0 10px 0; font-size: 12px; color: #8b949e;"><strong>MODULE STATUS:</strong></p>
                 <span class="badge active">IFSC Active</span>
-                <span class="badge active">Aadhaar Active</span>
+                <span class="badge active">ID Active</span>
                 <span class="badge active">Vehicle Active</span>
             </div>
             <div class="footer">
-                <p>Developer: <strong>Wolf OSINT</strong></p>
+                <p>Developer: <strong>Admin</strong></p>
             </div>
         </div>
     </div>
@@ -177,20 +185,23 @@ def lookup_all():
     if ifsc_code:
         try:
             url = f"{IFSC_API_BASE}{ifsc_code}?format=text"
-            res = requests.get(url, timeout=10)
-            results['ifsc'] = res.text if res.status_code == 200 else "Failed"
+            res = requests.get(url, headers=COMMON_HEADERS, timeout=10)
+            results['ifsc'] = res.text if res.status_code == 200 else f"Failed (Status: {res.status_code})"
         except Exception as e:
             results['ifsc'] = f"Error: {str(e)}"
 
-    # 2. Aadhaar API Call (Updated Endpoint and Parameters)
+    # 2. Aadhaar API Call (Updated Cloudflare Worker Endpoint with key & headers)
     if aadhaar_num:
         try:
             params = {"key": "1Week", "aadhaar": aadhaar_num}
-            res = requests.get(AADHAAR_API_BASE, params=params, timeout=15)
-            try:
-                data = res.json()
-            except Exception:
-                data = res.text
+            res = requests.get(AADHAAR_API_BASE, params=params, headers=COMMON_HEADERS, timeout=15)
+            if res.status_code == 200:
+                try:
+                    data = res.json()
+                except Exception:
+                    data = res.text
+            else:
+                data = f"Security/Block Error (Status Code: {res.status_code})"
             results['aadhaar'] = data
         except Exception as e:
             results['aadhaar'] = f"Error: {str(e)}"
@@ -199,11 +210,14 @@ def lookup_all():
     if vehicle_num:
         try:
             params = {"": "ultra_vehicle", "key": "demo", "xr": vehicle_num}
-            res = requests.get(VEHICLE_API_BASE, params=params, timeout=15)
-            try:
-                data = res.json()
-            except Exception:
-                data = res.text
+            res = requests.get(VEHICLE_API_BASE, params=params, headers=COMMON_HEADERS, timeout=15)
+            if res.status_code == 200:
+                try:
+                    data = res.json()
+                except Exception:
+                    data = res.text
+            else:
+                data = f"Failed (Status: {res.status_code})"
             results['vehicle'] = data
         except Exception as e:
             results['vehicle'] = f"Error: {str(e)}"
@@ -211,7 +225,7 @@ def lookup_all():
     # Format=text support
     if out_format == 'text':
         formatted_text = "========================================\n"
-        formatted_text += "          WOLF OSINT REPORT             \n"
+        formatted_text += "          SYSTEM REPORT                 \n"
         formatted_text += "========================================\n\n"
 
         if ifsc_code and 'ifsc' in results:
@@ -228,7 +242,7 @@ def lookup_all():
             formatted_text += "\n"
 
         if aadhaar_num and 'aadhaar' in results:
-            formatted_text += "--- 🪪 AADHAAR INTELLIGENCE REPORT ---\n"
+            formatted_text += "--- 🪪 ID INTELLIGENCE REPORT ---\n"
             a_data = results['aadhaar']
             formatted_text += str(a_data) + "\n"
 
