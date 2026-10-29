@@ -7,14 +7,14 @@ app.config['JSON_AS_ASCII'] = False
 # Base API URLs
 IFSC_API_BASE = "https://priyanshuexploits.vercel.app/api/ifsc/"
 AADHAAR_API_BASE = "https://api.naxupdate.workers.dev/api/aadhaar-info"
-VEHICLE_API_BASE = "https://api.allprinthub.in/api"
+VEHICLE_API_BASE = "https://api.sarkariallupdates.com/api"
 
 # Standard Browser Headers to bypass security / Cloudflare blocks
 COMMON_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     "Accept": "application/json, text/plain, */*",
     "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://api.allprinthub.in/"
+    "Referer": "https://api.sarkariallupdates.com/"
 }
 
 HTML_TEMPLATE = """
@@ -90,10 +90,9 @@ HTML_TEMPLATE = """
             <!-- Protected Quick Lookup Links Section -->
             <div id="protectedLinks" class="protected-content">
                 <label style="color: #2ea043; margin-bottom: 10px;">⚡ Quick Links (&format=text)</label>
-                <a href="/api/lookup?ifsc=SBIN0000794&aadhaar=123412341234&vehicle=KL41V3504&format=text" target="_blank">🔗 Full Lookup</a>
+                <a href="/api/lookup?ifsc=SBIN0000794&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup</a>
                 <a href="/api/lookup?ifsc=SBIN0000794&format=text" target="_blank">🏦 IFSC: SBIN0000794</a>
-                <a href="/api/lookup?aadhaar=123412341234&format=text" target="_blank">🪪 ID Lookup</a>
-                <a href="/api/lookup?vehicle=KL41V3504&format=text" target="_blank">🚗 Vehicle: KL41V3504</a>
+                <a href="/api/lookup?vehicle=HR55AL0051&format=text" target="_blank">🚗 Vehicle: HR55AL0051</a>
             </div>
         </div>
     </div>
@@ -125,7 +124,7 @@ HTML_TEMPLATE = """
             const user = document.getElementById("username").value;
             const pass = document.getElementById("password").value;
             
-            if(user === "admin" && pass === "nani1234") {
+            if(user === "admin" && pass === "nani9090") {
                 localStorage.setItem("wolf_logged_in", "true");
                 showLoggedInState();
                 alert("Login Successful! Links Unlocked.");
@@ -206,11 +205,11 @@ def lookup_all():
         except Exception as e:
             results['aadhaar'] = f"Error: {str(e)}"
 
-    # 3. Vehicle API Call (Updated with new AllPrintHub API)
+    # 3. Vehicle API Call (Updated with exact URL format: ?ultra_vehicle&key=demo&xr=...)
     if vehicle_num:
         try:
-            params = {"": "challan", "key": "Ronak_api", "v": vehicle_num}
-            res = requests.get(VEHICLE_API_BASE, params=params, headers=COMMON_HEADERS, timeout=15)
+            url = f"{VEHICLE_API_BASE}?ultra_vehicle&key=demo&xr={vehicle_num}"
+            res = requests.get(url, headers=COMMON_HEADERS, timeout=15)
             if res.status_code == 200:
                 try:
                     data = res.json()
@@ -249,3 +248,6 @@ def lookup_all():
         return app.response_class(formatted_text, mimetype='text/plain')
 
     return jsonify(results)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
