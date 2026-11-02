@@ -1,13 +1,17 @@
 from flask import Flask, jsonify, request, render_template_string
 import requests
+import os
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
-# Base API URLs
-IFSC_API_BASE = "https://priyanshuexploits.vercel.app/api/ifsc/"
-AADHAAR_API_BASE = "https://api.naxupdate.workers.dev/api/aadhaar-info"
-VEHICLE_API_BASE = "https://api.sarkariallupdates.com/api"
+# Number API only. Override these with environment variables if needed.
+# Use only an API/provider you are authorized to access.
+NUMBER_API_BASE = os.getenv(
+    "NUMBER_API_BASE",
+    "https://api.naxupdate.workers.dev/api/number-info"
+)
+NUMBER_API_KEY = os.getenv("NUMBER_API_KEY", "1Week")
 
 # Standard Browser Headers to bypass security / Cloudflare blocks
 COMMON_HEADERS = {
@@ -89,10 +93,8 @@ HTML_TEMPLATE = """
 
             <!-- Protected Quick Lookup Links Section -->
             <div id="protectedLinks" class="protected-content">
-                <label style="color: #2ea043; margin-bottom: 10px;">⚡ Quick Links (&format=text)</label>
-                <a href="/api/lookup?ifsc=SBIN0000794&vehicle=HR55AL0051&format=text" target="_blank">🔗 Full Lookup</a>
-                <a href="/api/lookup?ifsc=SBIN0000794&format=text" target="_blank">🏦 IFSC: SBIN0000794</a>
-                <a href="/api/lookup?vehicle=HR55AL0051&format=text" target="_blank">🚗 Vehicle: HR55AL0051</a>
+                <label style="color: #2ea043; margin-bottom: 10px;">⚡ Number API Quick Link</label>
+                <a href="/api/lookup?number=8348725603" target="_blank">📱 Test Number API</a>
             </div>
         </div>
     </div>
@@ -103,11 +105,18 @@ HTML_TEMPLATE = """
             <img src="https://t4.ftcdn.net/jpg/09/57/39/33/360_F_957393357_C2VcgHKUrwPjpdk0aMQY0DRsX434ySCZ.jpg" alt="Logo">
             <h1>Info Portal</h1>
             <div class="subtitle">System Online Running</div>
+            <form action="/api/lookup" method="get" style="margin: 18px 0; text-align: left;">
+                <label for="number" style="display:block; margin-bottom:8px; color:#8b949e;">📱 Number API Lookup</label>
+                <input id="number" name="number" type="text" inputmode="numeric"
+                       pattern="[0-9]{10}" maxlength="10" minlength="10"
+                       placeholder="Enter 10-digit mobile number" required
+                       style="width:100%; box-sizing:border-box; padding:10px; background:#0d1117; color:#c9d1d9; border:1px solid #30363d; border-radius:5px; margin-bottom:8px;">
+                <input type="hidden" name="format" value="json">
+                <button type="submit" style="width:100%; padding:10px; background:#238636; color:white; border:0; border-radius:5px; cursor:pointer;">Search Number API</button>
+            </form>
             <div class="status-box">
                 <p style="margin: 0 0 10px 0; font-size: 12px; color: #8b949e;"><strong>MODULE STATUS:</strong></p>
-                <span class="badge active">IFSC Active</span>
-                <span class="badge active">ID Active</span>
-                <span class="badge active">Vehicle Active</span>
+                <span class="badge active">Number API Configured</span>
             </div>
             <div class="footer">
                 <p>Developer: <strong>Admin</strong></p>
@@ -172,82 +181,37 @@ def home():
     return render_template_string(HTML_TEMPLATE)
 
 @app.route('/api/lookup', methods=['GET'])
-def lookup_all():
-    ifsc_code = request.args.get('ifsc')
-    aadhaar_num = request.args.get('aadhaar')
-    vehicle_num = request.args.get('vehicle')
-    out_format = request.args.get('format', 'json')
+def lookup_number():
+    number = request.args.get('number', '').strip()
 
-    results = {}
+    if not (number.isdigit() and len(number) == 10):
+        return jsonify({"error": "Enter a valid 10-digit mobile number."}), 400
 
-    # 1. IFSC API Call
-    if ifsc_code:
+    if not NUMBER_API_KEY:
+        return jsonify({"error": "Number API key is not configured."}), 503
+
+    try:
+        response = requests.get(
+            NUMBER_API_BASE,
+            params={"key": NUMBER_API_KEY, "number": number},
+            headers=COMMON_HEADERS,
+            timeout=15
+        )
         try:
-            url = f"{IFSC_API_BASE}{ifsc_code}?format=text"
-            res = requests.get(url, headers=COMMON_HEADERS, timeout=10)
-            results['ifsc'] = res.text if res.status_code == 200 else f"Failed (Status: {res.status_code})"
-        except Exception as e:
-            results['ifsc'] = f"Error: {str(e)}"
+            data = response.json()
+        except ValueError:
+            data = {"raw_response": response.text}
 
-    # 2. Aadhaar API Call
-    if aadhaar_num:
-        try:
-            params = {"key": "1Week", "aadhaar": aadhaar_num}
-            res = requests.get(AADHAAR_API_BASE, params=params, headers=COMMON_HEADERS, timeout=15)
-            if res.status_code == 200:
-                try:
-                    data = res.json()
-                except Exception:
-                    data = res.text
-            else:
-                data = f"Security/Block Error (Status Code: {res.status_code})"
-            results['aadhaar'] = data
-        except Exception as e:
-            results['aadhaar'] = f"Error: {str(e)}"
+        if response.status_code != 200:
+            return jsonify({
+                "error": "Number API request failed",
+                "status_code": response.status_code,
+                "details": data
+            }), 502
 
-    # 3. Vehicle API Call (Updated with exact URL format: ?ultra_vehicle&key=demo&xr=...)
-    if vehicle_num:
-        try:
-            url = f"{VEHICLE_API_BASE}?ultra_vehicle&key=demo&xr={vehicle_num}"
-            res = requests.get(url, headers=COMMON_HEADERS, timeout=15)
-            if res.status_code == 200:
-                try:
-                    data = res.json()
-                except Exception:
-                    data = res.text
-            else:
-                data = f"Failed (Status: {res.status_code})"
-            results['vehicle'] = data
-        except Exception as e:
-            results['vehicle'] = f"Error: {str(e)}"
-
-    # Format=text support
-    if out_format == 'text':
-        formatted_text = "========================================\n"
-        formatted_text += "          SYSTEM REPORT                 \n"
-        formatted_text += "========================================\n\n"
-
-        if ifsc_code and 'ifsc' in results:
-            formatted_text += str(results['ifsc']) + "\n\n"
-
-        if vehicle_num and 'vehicle' in results:
-            formatted_text += "--- 🚗 VEHICLE CHALLAN REPORT ---\n"
-            v_data = results['vehicle']
-            if isinstance(v_data, dict):
-                for k, v in v_data.items():
-                    formatted_text += f"{k} : {v}\n"
-            else:
-                formatted_text += str(v_data) + "\n"
-            formatted_text += "\n"
-
-        if aadhaar_num and 'aadhaar' in results:
-            formatted_text += "--- 🪪 ID INTELLIGENCE REPORT ---\n"
-            a_data = results['aadhaar']
-            formatted_text += str(a_data) + "\n"
-
-        return app.response_class(formatted_text, mimetype='text/plain')
-
-    return jsonify(results)
+        return jsonify(data)
+    except requests.RequestException as exc:
+        return jsonify({"error": f"Number API connection failed: {str(exc)}"}), 502
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
